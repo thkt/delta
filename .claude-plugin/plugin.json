@@ -1,0 +1,11 @@
+{
+  "name": "delta",
+  "version": "0.1.0",
+  "description": "Pre-compact Delta generation for session context preservation",
+  "author": {
+    "name": "thkt",
+    "url": "https://github.com/thkt"
+  },
+  "repository": "https://github.com/thkt/delta",
+  "license": "MIT"
+}
