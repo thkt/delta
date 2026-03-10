@@ -16,11 +16,16 @@ A Delta records the diff between your plan (SOW/Spec) and what actually happened
 ## How it works
 
 ```mermaid
-flowchart LR
-    A["context-monitor\n(PostToolUse)"] -->|"≤35%: suggest\n≤25%: demand"| B["/delta\n(Skill)"]
-    B --> C["/compact\n(manual)"]
-    B --> D["delta-{SESSION_ID}.md"]
-    E["session-start-compact\n(SessionStart)"] -->|"auto-compact\nfallback"| D
+flowchart TD
+    subgraph main [" "]
+        A["context-monitor<br>(PostToolUse)"] -->|"≤35%: suggest<br>≤25%: demand"| B["/delta<br>(Skill)"]
+        B --> C["/compact<br>(manual)"]
+    end
+
+    B --> D[("delta-SESSION_ID.md")]
+    E["session-start-compact<br>(SessionStart)"] -.->|"auto-compact<br>fallback"| D
+
+    style main fill:none,stroke:none
 ```
 
 1. **context-monitor** (PostToolUse hook) watches context window usage via bridge file
@@ -38,7 +43,7 @@ claude plugin add thkt/delta
 
 ## Plugin structure
 
-```
+```text
 .claude-plugin/
   plugin.json          # Plugin metadata (name, version, description)
 hooks/
