@@ -1,0 +1,13 @@
+{
+  "name": "delta",
+  "owner": {
+    "name": "thkt"
+  },
+  "plugins": [
+    {
+      "name": "delta",
+      "source": "./",
+      "description": "Pre-compact Delta generation for session context preservation"
+    }
+  ]
+}
