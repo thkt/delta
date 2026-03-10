@@ -1,7 +1,6 @@
 ---
 name: delta
-description:
-  Write Delta (plan-to-implementation diff) before compaction. Records
+description: Write Delta (plan-to-implementation diff) before compaction. Records
   discoveries, design changes, and decisions not in SOW/Spec. Use when user
   mentions delta, デルタ, コンテキスト保存, compact前, コンテキスト残量警告.
 allowed-tools: Read, Write, Glob, Grep
@@ -33,14 +32,14 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
 
 5. Generate compact focus argument:
    - Review the Delta content (especially Pending and Decisions)
-   - Compose a single-line Japanese focus instruction for `/compact` that tells
-     the compactor what to prioritize preserving
-   - Example: "Delta記録済み。Pending: Gap 2 HANDOFF.md実装。設計判断: two-layer
-     Delta採用"
+   - Compose a single-line focus instruction for `/compact` that tells the
+     compactor what to prioritize preserving
+   - Example: "Delta recorded. Pending: Gap 2 HANDOFF.md impl. Decision:
+     two-layer Delta adopted"
    - Include: current task status, key decisions, what the user will do next
 
 6. Report and suggest compact:
-   - Output: "Delta を workspace/delta/delta-{SESSION_ID}.md に書き出したで！"
+   - Output: "Delta written to workspace/delta/delta-{SESSION_ID}.md"
    - Then show the generated focus argument as a copyable `/compact` command:
 
      ```text
