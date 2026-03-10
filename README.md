@@ -1,5 +1,7 @@
 # delta
 
+[日本語](README.ja.md)
+
 Claude Code plugin for pre-compact Delta generation. Captures session context (discoveries, design changes, decisions, pending work) before context window compaction so nothing is lost between sessions.
 
 ## What is a Delta?
@@ -13,23 +15,12 @@ A Delta records the diff between your plan (SOW/Spec) and what actually happened
 
 ## How it works
 
-```
-Context filling up
-        │
-        ▼
-┌─────────────────┐    ┌──────────────┐    ┌─────────────┐
-│ context-monitor │───▶│   /delta      │───▶│  /compact    │
-│  (PostToolUse)  │    │  (Skill)     │    │  (manual)    │
-└─────────────────┘    └──────────────┘    └─────────────┘
-        │                      │
-        │                      ▼
-        │              delta-{SESSION_ID}.md
-        │
-        ▼ (if auto-compact fired first)
-┌───────────────────────┐
-│ session-start-compact │
-│    (SessionStart)     │──▶ Auto-generates Delta from transcript
-└───────────────────────┘
+```mermaid
+flowchart LR
+    A["context-monitor\n(PostToolUse)"] -->|"≤35%: suggest\n≤25%: demand"| B["/delta\n(Skill)"]
+    B --> C["/compact\n(manual)"]
+    B --> D["delta-{SESSION_ID}.md"]
+    E["session-start-compact\n(SessionStart)"] -->|"auto-compact\nfallback"| D
 ```
 
 1. **context-monitor** (PostToolUse hook) watches context window usage via bridge file
