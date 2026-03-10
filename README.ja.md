@@ -1,6 +1,6 @@
-# delta
+[English](README.md) | **日本語**
 
-[English](README.md)
+# delta
 
 Claude Codeプラグイン。コンテキストウィンドウのcompaction前にDelta（計画と実装の差分）を生成し、セッション間で失われるコンテキストを保存します。
 

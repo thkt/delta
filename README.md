@@ -1,6 +1,6 @@
-# delta
+**English** | [日本語](README.ja.md)
 
-[日本語](README.ja.md)
+# delta
 
 Claude Code plugin for pre-compact Delta generation. Captures session context (discoveries, design changes, decisions, pending work) before context window compaction so nothing is lost between sessions.
 
