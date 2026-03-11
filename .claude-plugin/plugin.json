@@ -1,6 +1,6 @@
 {
   "name": "delta",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "description": "Pre-compact Delta generation for session context preservation",
   "author": {
     "name": "thkt",
