@@ -1,6 +1,17 @@
 {
-  "description": "delta context monitor and auto-compact fallback hooks",
+  "description": "delta context gate, monitor, and auto-compact fallback hooks",
   "hooks": {
+    "PreToolUse": [
+      {
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/context-gate.sh",
+            "timeout": 3000
+          }
+        ]
+      }
+    ],
     "PostToolUse": [
       {
         "hooks": [

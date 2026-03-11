@@ -1,6 +1,4 @@
 #!/usr/bin/env bash
-# Shared test helpers for hook tests
-# Usage: source "$SCRIPT_DIR/test-helpers.sh"
 
 PASS=0
 FAIL=0
@@ -50,6 +48,14 @@ assert_empty() {
     echo "  FAIL: $name (expected empty, got: $(echo "$text" | head -1))"
     FAIL=$((FAIL + 1))
   fi
+}
+
+create_bridge() {
+  local session_id="$1" remaining="$2"
+  local ts="${3:-$(date +%s)}"
+  printf '{"remaining_pct":%s,"ts":%s}' \
+    "$remaining" "$ts" \
+    > "${TMPDIR_BASE}/claude-ctx-${session_id}.json"
 }
 
 report_results() {

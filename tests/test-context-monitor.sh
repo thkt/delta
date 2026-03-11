@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
-# Tests for context-monitor.sh (PostToolUse context warning hook)
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
@@ -10,23 +9,12 @@ TMPDIR_BASE="$(mktemp -d)"
 cleanup() { rm -rf "$TMPDIR_BASE"; }
 trap cleanup EXIT
 
-# Helper: create bridge file
-create_bridge() {
-  local session_id="$1" remaining="$2"
-  local ts="${3:-$(date +%s)}"
-  printf '{"remaining_pct":%s,"ts":%s}' \
-    "$remaining" "$ts" \
-    > "${TMPDIR_BASE}/claude-ctx-${session_id}.json"
-}
-
-# Helper: run hook with session_id
 run_hook() {
   local session_id="$1"
   local json='{"tool_name":"Read","session_id":"'"$session_id"'"}'
   printf '%s' "$json" | TMPDIR="$TMPDIR_BASE" zsh "$HOOK" 2>/dev/null
 }
 
-# Helper: clean state files
 clean_state() {
   local session_id="$1"
   rm -f "${TMPDIR_BASE}/claude-ctx-${session_id}-warned"
@@ -62,18 +50,18 @@ test_warning_outputs_delta() {
   local output
   output=$(run_hook "warn-001") || true
   assert_contains "has additionalContext" "additionalContext" "$output"
-  assert_contains "has /delta instruction" "Execute /delta" "$output"
-  assert_contains "is warning level" "at a good stopping point" "$output"
+  assert_contains "has /delta instruction" "run Skill(skill:" "$output"
+  assert_contains "is warning level" "Finish your current step" "$output"
 }
 
 test_critical_outputs_delta_now() {
-  echo "critical (20%) → /delta NOW"
+  echo "critical (20%) → /delta immediately"
   create_bridge "crit-001" 20
   clean_state "crit-001"
   local output
   output=$(run_hook "crit-001") || true
   assert_contains "has additionalContext" "additionalContext" "$output"
-  assert_contains "has NOW" "NOW" "$output"
+  assert_contains "has blocked message" "Non-delta tools are now blocked" "$output"
   assert_contains "no new work" "Do not start new work" "$output"
 }
 
@@ -104,7 +92,7 @@ test_escalation_retriggers() {
   local output
   output=$(run_hook "esc-001") || true
   assert_contains "re-triggered" "additionalContext" "$output"
-  assert_contains "has NOW" "NOW" "$output"
+  assert_contains "has blocked message" "Non-delta tools are now blocked" "$output"
 }
 
 test_stale_bridge() {
@@ -138,14 +126,22 @@ test_debounce() {
   assert_empty "debounce suppresses" "$output"
 }
 
+test_critical_at_zero() {
+  echo "critical (0%) → /delta immediately"
+  create_bridge "zero-001" 0
+  clean_state "zero-001"
+  local output
+  output=$(run_hook "zero-001") || true
+  assert_contains "warns at 0%" "0%" "$output"
+}
+
 test_no_jq() {
-  echo "jq unavailable → no output"
+  echo "jq unavailable → still outputs (printf fallback)"
   create_bridge "nojq-001" 30
   clean_state "nojq-001"
   local output
-  # PATH=/bin keeps cat/date but excludes /usr/bin/jq and ~/.local/bin/jq
   output=$(printf '{"tool_name":"Read","session_id":"nojq-001"}' | TMPDIR="$TMPDIR_BASE" PATH="/bin" zsh "$HOOK" 2>/dev/null) || true
-  assert_empty "no output without jq" "$output"
+  assert_contains "outputs without jq" "additionalContext" "$output"
 }
 
 echo "=== context-monitor.sh tests ==="
@@ -159,6 +155,7 @@ test_escalation_retriggers
 test_stale_bridge
 test_missing_bridge
 test_debounce
+test_critical_at_zero
 test_no_jq
 
 report_results

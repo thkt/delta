@@ -18,7 +18,8 @@ A Delta records the diff between your plan (SOW/Spec) and what actually happened
 ```mermaid
 flowchart TD
     subgraph main [" "]
-        A["context-monitor<br>(PostToolUse)"] -->|"≤35%: suggest<br>≤25%: demand"| B["/delta<br>(Skill)"]
+        G["context-gate<br>(PreToolUse)"] -->|"≤25%: block<br>non-delta tools"| B["/delta<br>(Skill)"]
+        A["context-monitor<br>(PostToolUse)"] -->|"≤35%: suggest<br>≤25%: demand"| B
         B --> C["/compact<br>(manual)"]
     end
 
@@ -28,12 +29,15 @@ flowchart TD
     style main fill:none,stroke:none
 ```
 
-1. **context-monitor** (PostToolUse hook) watches context window usage via bridge file
+1. **context-gate** (PreToolUse hook) blocks non-delta tool calls at CRITICAL level
+   - At ≤25% remaining: only allows Skill, Read, Write, Glob, Grep (tools needed for `/delta`)
+   - All other tools are blocked until Delta is written
+2. **context-monitor** (PostToolUse hook) watches context window usage via bridge file
    - **WARNING** at ≤35% remaining: suggests running `/delta`
    - **CRITICAL** at ≤25% remaining: demands immediate `/delta` execution
-   - Debounces warnings (every 5 tool calls)
-2. **`/delta` skill** generates a Delta file from current session context
-3. **session-start-compact** (SessionStart hook) catches auto-compact events and generates Delta from the transcript as a fallback
+   - Fires once per severity level; escalation from WARNING to CRITICAL re-triggers
+3. **`/delta` skill** generates a Delta file from current session context
+4. **session-start-compact** (SessionStart hook) catches auto-compact events and generates Delta from the transcript as a fallback
 
 ## Installation
 
@@ -46,31 +50,41 @@ claude plugin add thkt/delta
 ```text
 .claude-plugin/
   plugin.json          # Plugin metadata (name, version, description)
+  marketplace.json     # Plugin registry listing
 hooks/
-  hooks.json           # Hook registrations (PostToolUse + SessionStart)
-  context-monitor.sh   # Context window usage monitor
+  hooks.json           # Hook registrations (PreToolUse + PostToolUse + SessionStart)
+  context-gate.sh      # Context window gate (blocks non-delta tools at critical)
+  context-monitor.sh   # Context window usage monitor (advisory warnings)
+  lib/
+    bridge-parser.sh   # Shared bridge file parsing and thresholds
   session-start-compact.sh  # Auto-compact fallback Delta generator
 skills/
   delta/
     SKILL.md           # /delta skill definition
 tests/
   test-helpers.sh      # Test utilities (assert_eq, assert_contains, etc.)
-  test-context-monitor.sh        # 16 tests
-  test-session-start-compact.sh  # 13 tests
+  test-context-gate.sh         # 22 assertions
+  test-context-monitor.sh      # 17 assertions
+  test-session-start-compact.sh  # 12 assertions
 ```
 
 ## Configuration
 
-### context-monitor thresholds
+### Thresholds
 
-Edit `hooks/context-monitor.sh` to adjust:
+Shared thresholds are defined in `hooks/lib/bridge-parser.sh` and used by both context-gate and context-monitor:
 
-| Variable             | Default | Description                        |
-| -------------------- | ------- | ---------------------------------- |
-| `WARNING_THRESHOLD`  | 35      | Remaining % to trigger warning     |
-| `CRITICAL_THRESHOLD` | 25      | Remaining % to trigger critical    |
-| `STALE_SECONDS`      | 60      | Max age of bridge file data        |
-| `DEBOUNCE_CALLS`     | 5       | PostToolUse calls between warnings |
+| Variable             | Default | Description                             |
+| -------------------- | ------- | --------------------------------------- |
+| `WARNING_THRESHOLD`  | 35      | Remaining % to trigger warning          |
+| `CRITICAL_THRESHOLD` | 25      | Remaining % to trigger critical / block |
+| `STALE_SECONDS`      | 60      | Max age of bridge file data             |
+
+The debounce setting is in `hooks/context-monitor.sh`:
+
+| Variable         | Default | Description                              |
+| ---------------- | ------- | ---------------------------------------- |
+| `DEBOUNCE_CALLS` | 5       | PostToolUse calls to skip between checks |
 
 ### Bridge file
 
@@ -83,13 +97,14 @@ The context monitor reads from `$TMPDIR/claude-ctx-{session_id}.json`, written b
 ## Dependencies
 
 - **zsh** - hook scripts use zsh
-- **jq** - required for JSON output (warning path only for context-monitor, always for session-start-compact)
+- **jq** - optional for context-gate and context-monitor (printf fallback without jq); required for session-start-compact
 
 ## Running tests
 
 ```bash
-zsh tests/test-context-monitor.sh
-zsh tests/test-session-start-compact.sh
+bash tests/test-context-gate.sh
+bash tests/test-context-monitor.sh
+bash tests/test-session-start-compact.sh
 ```
 
 ## License
