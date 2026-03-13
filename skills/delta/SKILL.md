@@ -3,7 +3,7 @@ name: delta
 description: Write Delta (plan-to-implementation diff) before compaction. Records
   discoveries, design changes, and decisions not in SOW/Spec. Use when user
   mentions delta, デルタ, コンテキスト保存, compact前, コンテキスト残量警告.
-allowed-tools: Read, Write, Glob, Grep
+allowed-tools: Read, Write, Glob, Grep, Bash
 model: opus
 user-invocable: true
 ---
@@ -40,11 +40,15 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
 
 6. Report and suggest compact:
    - Output: "Delta written to workspace/delta/delta-{SESSION_ID}.md"
-   - Then show the generated focus argument as a copyable `/compact` command:
+   - Copy the `/compact [focus argument]` command to clipboard via Bash:
+     `echo -n '/compact [focus argument]' | pbcopy`
+   - Then show the command and confirm it was copied:
 
      ```text
      /compact [focus argument]
      ```
+
+     Copied to clipboard. Cmd+V to paste and run.
 
    - Note: `/compact` is a built-in CLI command and cannot be invoked via Skill
      tool. The user must run it manually.
