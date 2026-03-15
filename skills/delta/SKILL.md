@@ -38,20 +38,20 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
      two-layer Delta adopted"
    - Include: current task status, key decisions, what the user will do next
 
-6. Report and suggest compact:
+6. Run compact:
    - Output: "Delta written to workspace/delta/delta-{SESSION_ID}.md"
-   - Copy the `/compact [focus argument]` command to clipboard via Bash:
-     `echo -n '/compact [focus argument]' | pbcopy`
-   - Then show the command and confirm it was copied:
+   - After outputting, immediately run `/compact [focus argument]` yourself.
+   - `/compact` is a built-in command. Type it directly as your next action
+     after this skill completes, as if the user had typed it.
+   - Fallback: if `/compact` cannot be executed, copy the command to clipboard
+     via Bash: `echo -n '/compact [focus argument]' | pbcopy`
+     Then show the command and confirm it was copied:
 
      ```text
      /compact [focus argument]
      ```
 
      Copied to clipboard. Cmd+V to paste and run.
-
-   - Note: `/compact` is a built-in CLI command and cannot be invoked via Skill
-     tool. The user must run it manually.
 
 ## Delta Template
 
