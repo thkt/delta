@@ -15,8 +15,8 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
 ## Execution
 
 1. Find the active SOW/Spec:
-   - Check `workspace/.current-sow` for path
-   - Or scan `workspace/planning/` for recent sow.md/spec.md
+   - Check `~/.claude/workspace/.current-sow` for path
+   - Or scan `~/.claude/workspace/planning/` for recent sow.md/spec.md
    - If none found, skip SOW/Spec comparison and record general decisions
 
 2. Review current context and extract:
@@ -25,7 +25,7 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
    - Decisions: choices made during discussion not recorded in plan
    - Pending work: incomplete tasks and next actions
 
-3. Write to `workspace/delta/delta-${CLAUDE_SESSION_ID}.md` (create directory if
+3. Write to `~/.claude/workspace/delta/delta-${CLAUDE_SESSION_ID}.md` (create directory if
    needed, overwrite if exists)
 
 4. Format (see template below)
@@ -39,7 +39,7 @@ Write a Delta file capturing deviations from SOW/Spec before compacting.
    - Include: current task status, key decisions, what the user will do next
 
 6. Run compact:
-   - Output: "Delta written to workspace/delta/delta-{SESSION_ID}.md"
+   - Output: "Delta written to ~/.claude/workspace/delta/delta-{SESSION_ID}.md"
    - After outputting, immediately run `/compact [focus argument]` yourself.
    - `/compact` is a built-in command. Type it directly as your next action
      after this skill completes, as if the user had typed it.
